@@ -1,0 +1,218 @@
+<?php
+
+use App\Http\Controllers\AdminCategoryController;
+use App\Models\Category;
+use GuzzleHttp\BodySummarizer;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KostController;
+use App\Http\Controllers\KontrakanController;
+use App\Http\Controllers\KamarController;
+use App\Http\Controllers\KonfirmasiController;
+use App\Http\Controllers\TambahController;
+use App\Http\Controllers\UpdateController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardPostController;
+use App\Http\Controllers\DashboardKostController;
+use App\Http\Controllers\DashboardKontrakanController;
+use App\Http\Controllers\PenambahanController;
+use App\Http\Controllers\PembaharuanController;
+use App\Http\Controllers\UserController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('home', [
+        "title" => "Home",
+        "active" => 'home'
+    ]);
+})->middleware('auth');
+
+Route::get('/about', function () {
+    return view('about', [
+        "title" => "About",
+        "active" => 'about',
+        "name" => "Ilman maulana",
+        "image" => "test.jpg"
+    ]);
+})->middleware('auth');
+
+
+
+Route::get('/kosts', [KostController::class, 'index'])->middleware('auth');
+Route::get('/kontrakans', [KontrakanController::class, 'index'])->middleware('auth');
+Route::get('/konfirmasi', [KonfirmasiController::class, 'index'])->middleware('auth');
+
+Route::get('/kosts/tambahUpdateKost', [KostController::class, 'tambahUpdate'])->middleware('auth');
+Route::get('/kosts/tambahKost', [KostController::class, 'tambah'])->middleware('auth');
+Route::post('/kosts/tambahUpdateKost', [KostController::class, 'store'])->middleware('auth');
+Route::get('/kosts/editKost/{kost}', [KostController::class, 'edit'])->middleware('auth');
+Route::post('/ajukanUpdateKost', [KostController::class, 'update'])->middleware('auth');
+
+
+
+
+
+Route::get('/kosts/tambahUpdateKamar', [KamarController::class, 'tambahUpdate'])->middleware('auth');
+Route::get('/kosts/tambahKamar', [KamarController::class, 'tambah'])->middleware('auth');
+Route::post('/kosts/tambahUpdateKamar', [KamarController::class, 'store'])->middleware('auth');
+Route::get('/kosts/editKamar/{kamar}', [KamarController::class, 'edit'])->middleware('auth');
+Route::post('/ajukanUpdateKamar', [KamarController::class, 'update'])->middleware('auth');
+
+
+
+
+
+
+
+
+
+Route::get('/kontrakans/tambahUpdateKontrakan', [KontrakanController::class, 'tambahUpdate'])->middleware('auth');
+Route::get('/kontrakans/tambahKontrakan', [KontrakanController::class, 'tambah'])->middleware('auth');
+Route::post('/kontrakans/tambahUpdateKontrakan', [KontrakanController::class, 'store'])->middleware('auth');
+Route::get('/kontrakans/editKontrakan/{kontrakan}', [KontrakanController::class, 'edit'])->middleware('auth');
+Route::post('/ajukanUpdateKontrakan', [KontrakanController::class, 'update'])->middleware('auth');
+
+
+
+// Route::get('/updateData', [UpdateController::class, 'index'])->middleware('auth');
+// Route::get('/tambahData', [TambahController::class, 'index'])->middleware('auth');
+
+
+//halaman single post
+// Route::get('/posts/{post:slug}', [KostController::class, 'show'])->middleware('auth');
+Route::get('/kosts/{kost}', [KostController::class, 'show'])->middleware('auth');
+Route::get('/kontrakans/{kontrakan}', [KontrakanController::class, 'show'])->middleware('auth');
+//tambah :slug untuk mencari berdasarkan slug, jika tidak dicari berdasrkan id
+
+Route::get('/categories', function () {
+    return view('categories', [
+        'title' => 'Post category',
+        'active' => 'categories',
+        'categories' => Category::all()
+    ]);
+})->middleware('auth');
+
+
+
+// Route::get('/categories/{category:slug}', function (Category $category) {
+//     return view('posts', [
+//         'title' => "Post by Category : $category->name",
+//         'active' => 'categories',
+//         'posts' => $category->posts->load('category', 'author'),
+//     ]);
+// });
+
+
+// Route::get('/authors/{author:username}', function (User $author) {
+//     return view('posts', [
+//         'title' => "Posts by Author : $author->name",
+//         'active' => 'posts',
+//         'posts' => $author->posts->load('category', 'author'),
+//     ]);
+// });
+
+
+//LOGIN
+Route::get('/login', [LoginController::class, 'index'])->name('login')->middleware('guest');
+//kalau method nya get, menuju /login yang akan mengakses controller LoginController dan function index
+Route::post('/login', [LoginController::class, 'authenticate']);
+Route::post('/logout', [LoginController::class, 'logout']);
+
+
+//REGISTER
+Route::get('/register', [RegisterController::class, 'index'])->middleware('guest');
+Route::post('/register', [RegisterController::class, 'store']);
+//apabila ada request ke halaman register tapi method nya post, maka panggil controller register yang method nya store
+
+
+//DASHBOARD
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth');
+
+// Route::get('/dashboard', function () {
+//     return view('dashboard.index');
+// })->middleware('auth');
+
+
+Route::get('/dashboard/posts/checkSlug', [DashboardPostController::class, 'checkSlug'])->middleware('auth');
+Route::resource(
+    '/dashboard/posts',
+    DashboardPostController::class
+)->middleware('auth');
+
+Route::resource(
+    '/dashboard/kosts',
+    DashboardKostController::class
+)->middleware('auth');
+
+// Route::get('/dashboard/kosts/{kost}', [DashboardKostController::class, 'show'])->middleware('auth');
+
+Route::resource('/dashboard/kontrakans', DashboardKontrakanController::class)->middleware('auth');
+
+// Route::resource('/dashboard/categories', AdminCategoryController::class)->except('show');
+Route::resource('/dashboard/categories', AdminCategoryController::class)->middleware('admin');
+
+
+// PENAMBAHAN 
+Route::get('/dashboard/penambahan', [PenambahanController::class, 'index'])->middleware('auth');
+Route::get('/dashboard/penambahan/{kontrakan}', [PenambahanController::class, 'detailKontrakan'])->middleware('auth');
+
+Route::delete('/dashboard/tolakKontrakan/{kontrakan}', [PenambahanController::class, 'tolakKontrakan'])->middleware('auth');
+// mengubah statusPengajuan jadi 1 atau disetujui
+Route::post('/dashboard/terimaKontrakan/{kontrakan}', [PenambahanController::class, 'terimaKontrakan'])->middleware('auth');
+
+Route::delete('/dashboard/tolakKost/{kost}', [PenambahanController::class, 'tolakKost'])->middleware('auth');
+
+
+// PEMBAHRUAN ATAU UPDATE 
+Route::get('/dashboard/pembaharuan', [PembaharuanController::class, 'index'])->middleware('auth');
+Route::get('/dashboard/pembaharuan/{kontrakan}', [PembaharuanController::class, 'detailKontrakan'])->middleware('auth');
+Route::delete('/dashboard/tolakPembaharuanKontrakan/{kontrakan}', [PembaharuanController::class, 'tolakKontrakan'])->middleware('auth');
+// mengubah data kontrakan pada tabel kontrakan sesuai data yang ada pada tabel edit_kontrakan
+Route::post('/dashboard/terimaPembaharuanKontrakan/{kontrakan}', [PembaharuanController::class, 'terimaKontrakan'])->middleware('auth');
+
+
+// PENGGUNA DARI SISI ADMIN
+Route::get('/dashboard/penggunas', [UserController::class, 'index'])->middleware('auth');
+
+
+Route::get('/dashboard/pengelolas', [UserController::class, 'pengelola'])->middleware('auth');
+Route::get('/dashboard/pengelolas/create', [UserController::class, 'tambahPengelola'])->middleware('auth');
+Route::post('/dashboard/pengelolas', [UserController::class, 'simpanData'])->middleware('auth');
+Route::delete('/dashboard/hapusPengelola/{pengelola}', [UserController::class, 'hapusPengelola'])->middleware('auth');
+
+
+
+
+
+
+
+
+
+
+
+
+// KONFIRMASI 
+// vcafsdu
+// konfirmasiKost/{kost} ini adalah konfirmasiKost/{kost->id} dimana ini dicocokan dengan action pada form di view,
+// lalu, route ini menuju controller dengan nama KonfirmasiController dengan method konfirmasiKost
+// Route::post('/konfirmasiKost/{kost}', [KonfirmasiController::class, 'konfirmasiKost'])->middleware('auth');
+Route::post('/konfirmasiKontrakan/{kontrakan}', [KonfirmasiController::class, 'konfirmasiKontrakan'])->middleware('auth');
+Route::get('/konfirmasiKost', [KonfirmasiController::class, 'konfirmasiKamar'])->middleware('auth');
+Route::post('/konfirmasiKamar/{kamar}', [KonfirmasiController::class, 'konfirmasiKamarSetuju'])->middleware('auth');
+
+
+
+
+
+// vfghfaduya 
